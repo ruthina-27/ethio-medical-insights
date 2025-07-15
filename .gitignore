@@ -1,0 +1,11 @@
+# .env contains secrets and should never be committed
+.env
+.venv
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+data/processed/
+*.egg-info/
+.DS_Store
