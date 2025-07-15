@@ -1,0 +1,13 @@
+name: 'dbt_medical_insights'
+version: '1.0.0'
+config-version: 2
+profile: 'dbt_medical_insights'
+
+model-paths: ['models']
+
+models:
+  dbt_medical_insights:
+    staging:
+      materialized: view
+    marts:
+      materialized: table 

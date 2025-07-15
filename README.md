@@ -1,34 +1,64 @@
-# Ethiopian Medical Business Data Platform
+# Ethio Medical Insights Data Platform
 
-A data pipeline for analyzing Ethiopian medical businesses from Telegram channels.
+## Project Overview
+This project builds a robust data platform to generate insights about Ethiopian medical businesses using data scraped from public Telegram channels. The pipeline extracts, loads, and transforms raw data into a clean, analytics-ready warehouse using modern ELT practices.
 
-## Features
+## Architecture
+```
+Raw Telegram Channels -> Data Lake (JSON) -> PostgreSQL (raw) -> dbt (star schema) -> Analytics
+```
 
-- Telegram data scraping
-- Data lake storage
-- PostgreSQL data warehouse
-- dbt transformations
-- YOLO object detection
-- FastAPI analytical API
+## Setup Instructions
 
-## Setup
+### 1. Clone the repository
+```bash
+git clone <repo-url>
+cd ethio-medical-insights
+```
 
-1. Clone the repository
-2. Create `.env` file from `.env.example`
-3. Run `docker-compose up --build`
+### 2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
 
-## Telegram Scraping
+### 3. Set up environment variables
+- Copy `.env.example` to `.env` and fill in your secrets.
 
-1. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. Set up your `.env` file with your Telegram API credentials.
-3. Run the scraper:
-   ```bash
-   python scripts/telegram_scraper.py
-   ```
+### 4. Run Docker (PostgreSQL)
+```bash
+docker-compose up -d
+```
 
-- Scraped messages will be saved as JSON in `data/raw/telegram_messages/YYYY-MM-DD/channel_name.json`.
-- Images will be saved in `data/raw/telegram_messages/YYYY-MM-DD/channel_name/images/`.
-- Logs are written to `logs/scraper.log`.
+### 5. Scrape Telegram Data
+```bash
+python scripts/telegram_scraper.py
+```
+
+### 6. Load Data into PostgreSQL
+```bash
+python scripts/load_to_postgres.py
+```
+
+### 7. (If dbt is available) Initialize and run dbt
+```bash
+# In Python 3.10+ environment
+pip install dbt-postgres
+cd dbt_medical_insights
+# Edit profiles.yml with your DB credentials
+# Run dbt models
+ dbt run
+ dbt test
+ dbt docs generate
+```
+
+## Data Lake Structure
+- `data/raw/telegram_messages/YYYY-MM-DD/channel_name.json`
+- Images: `data/raw/telegram_messages/YYYY-MM-DD/channel_name/images/`
+
+## Testing
+- Check `logs/scraper.log` for scraping status.
+- Check PostgreSQL for `raw.telegram_messages` table.
+- dbt tests validate data quality (if dbt is set up).
+
+## Contact
+For questions, contact the author.
