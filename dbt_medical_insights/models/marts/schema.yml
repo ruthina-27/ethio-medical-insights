@@ -25,3 +25,14 @@ models:
       - name: date_id
         tests:
           - not_null 
+  - name: fct_image_detections
+    columns:
+      - name: message_id
+        tests:
+          - not_null
+      - name: detected_object_class
+        tests:
+          - not_null
+      - name: confidence_score
+        tests:
+          - not_null 

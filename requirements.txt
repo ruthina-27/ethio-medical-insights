@@ -9,3 +9,4 @@ python-dotenv
 psycopg2
 # For dbt transformation
 # You may also install dbt-postgres via pip
+ultralytics

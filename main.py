@@ -36,11 +36,7 @@ class CovidSummary(BaseModel):
     total_cases: float
 
 # === FastAPI app ===
-app = FastAPI(
-    title="COVID‑19 Weekly Analytics API",
-    description="Serves aggregated weekly new‑cases per country",
-    version="1.0",
-)
+app = FastAPI(title="Ethio Medical Insights Analytical API")
 
 def get_db():
     db = SessionLocal()
@@ -49,35 +45,28 @@ def get_db():
     finally:
         db.close()
 
-@app.get(
-    "/analytics/covid",
-    response_model=List[CovidSummary],
-    summary="Get total weekly cases for a country",
-)
-def get_covid_stats(
-    country: str = Query(..., description="Country name as in the dataset"),
-    start: date = Query(..., description="Start date (inclusive)"),
-    end: date = Query(..., description="End date (inclusive)"),
-    db: Session = Depends(get_db),
-):
-    """
-    Returns the summed new_cases for the given country,
-    grouped into weeks, filtered by [start, end].
-    """
-    # Validate date range
-    if end < start:
-        raise HTTPException(400, "`end` must be >= `start`")
+@app.get("/api/reports/top-products", response_model=List[schemas.ProductReport])
+def top_products(limit: int = 10, db: Session = Depends(get_db)):
+    results = crud.get_top_products(db, limit)
+    return [{"product": r[0], "count": r[1]} for r in results]
 
-    q = (
-        db.query(
-            CovidWeekly.country,
-            func.sum(CovidWeekly.new_cases).label("total_cases")
-        )
-        .filter(CovidWeekly.country == country)
-        .filter(CovidWeekly.date.between(start, end))
-        .group_by(CovidWeekly.country)
+@app.get("/api/channels/{channel_name}/activity", response_model=schemas.ChannelActivity)
+def channel_activity(channel_name: str, db: Session = Depends(get_db)):
+    daily, weekly = crud.get_channel_activity(db, channel_name)
+    return schemas.ChannelActivity(
+        channel=channel_name,
+        daily_posts=[{"date": r[0], "count": r[1]} for r in daily],
+        weekly_posts=[{"week": r[0], "count": r[1]} for r in weekly]
     )
-    result = q.one_or_none()
-    if not result:
-        return []
-    return [CovidSummary(country=result.country, total_cases=result.total_cases)]
+
+@app.get("/api/search/messages", response_model=List[schemas.MessageSearchResult])
+def search_messages(query: str = Query(...), db: Session = Depends(get_db)):
+    results = crud.search_messages(db, query)
+    return [
+        schemas.MessageSearchResult(
+            message_id=r[0],
+            channel=r[1],
+            message_text=r[2],
+            message_date=str(r[3])
+        ) for r in results
+    ]
